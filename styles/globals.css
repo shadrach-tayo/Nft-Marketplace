@@ -1,0 +1,14 @@
+/* ./styles/globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a.active {
+  color: grey;
+}
+
+/* .nft_form {
+  padding: 20px;
+  border: 1px solid rgb(86, 57, 218);
+} */
