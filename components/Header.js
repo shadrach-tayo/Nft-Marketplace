@@ -1,22 +1,23 @@
 /* eslint-disable @next/next/no-img-element */
 /* This example requires Tailwind CSS v2.0+ */
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useContext } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
 import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import { useRouter } from "next/router";
 import { useWeb3React } from "../hooks/useWeb3React";
+import { web3context } from "../context/web3ProviderContext";
 
 // import { ChevronDownIcon } from "@heroicons/react/solid";
 
 export default function Header() {
   const router = useRouter();
   const [activeRoute, setActiveRoute] = useState("");
-  const { connected, signer, error, connect } = useWeb3React();
+  const { connected, signer, error, connect } = useContext(web3context);
 
+  console.log('web3 ', connected, signer)
   useEffect(() => {
-    console.log("active route ", router.pathname);
     setActiveRoute(router.pathname);
     // getProps()
   }, [router.pathname]);

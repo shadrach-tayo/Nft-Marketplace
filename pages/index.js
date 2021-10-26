@@ -1,27 +1,28 @@
 /* eslint-disable @next/next/no-img-element */
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import web3 from "web3";
 import axios from "axios";
-import Web3Modal from "web3modal";
 import { nftaddress, nftmarketaddress } from "../config";
 
 import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
 import Market from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import MarketItem from "../components/MarketItem";
-import { useWeb3React } from "../hooks/useWeb3React";
+import { web3context } from "../context/web3ProviderContext";
 
 
 export default function Home() {
   const [nfts, setNfts] = useState([]);
   const [loaded, setLoaded] = useState("not-loaded");
-  const { provider, connected, connect, error } = useWeb3React();
+  const { provider, connected, connect, error } = useContext(web3context);
 
   useEffect(() => {
     loadNFTs();
-  }, []);
+  }, [connected]);
 
   async function loadNFTs() {
+    
+    if(!connected) return;
     // write code to load nfts here
     const provider = new ethers.providers.JsonRpcProvider();
     const tokenContract = new ethers.Contract(nftaddress, NFT.abi, provider);
@@ -90,7 +91,7 @@ export default function Home() {
   return (
     <div className="flex justify-center">
       <div style={{ width: 900 }}>
-        <div className="grid grid-cols-2 gap-4 pt-8">
+        <div className="grid grid-cols-3 gap-4 pt-8">
           {nfts.map((nft, i) => (
             <MarketItem key={i} onBuyNft={buyNft} nft={nft}></MarketItem>
           ))}

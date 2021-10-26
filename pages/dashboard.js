@@ -1,35 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import web3 from "web3";
 import axios from "axios";
-import Web3Modal from "web3modal";
-// import Image from "next/image";
 
 import { nftmarketaddress, nftaddress } from "../config";
 
 import Market from "../artifacts/contracts/NFTMarket.sol/NFTMarket.json";
 import NFT from "../artifacts/contracts/NFT.sol/NFT.json";
 import MarketItem from "../components/MarketItem";
+import { web3context } from "../context/web3ProviderContext";
 
 export default function Home() {
   const [nfts, setNfts] = useState([]);
   const [loaded, setLoaded] = useState("not-loaded");
-  
+  const { signer, connected } = useContext(web3context);
+
   useEffect(() => {
-    if(loaded == 'loaded') return;
+    if (loaded == "loaded") return;
     loadNFTs();
-  }, [])
+  }, [connected]);
 
   async function loadNFTs() {
     // write code to query own nfts here
-    const web3modal = new Web3Modal({
-      network: "mainnet",
-      cacheProvider: true,
-    });
-    const connection = await web3modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = await provider.getSigner();
+    if(!connected) return;
+
     const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
     const marketContract = new ethers.Contract(
       nftmarketaddress,
@@ -53,7 +48,6 @@ export default function Home() {
           seller: i.seller,
           description: meta.data.description,
         };
-        console.log('nn ', meta.data)
         return item;
       })
     );

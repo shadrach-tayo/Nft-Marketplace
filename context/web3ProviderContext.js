@@ -1,8 +1,10 @@
-import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Web3Modal from "web3modal";
+import { ethers } from "ethers";
 
-export const useWeb3React = () => {
+export const web3context = React.createContext();
+
+export const Web3ContextProvider = ({ children }) => {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -14,7 +16,7 @@ export const useWeb3React = () => {
 
   async function connect() {
     try {
-      // console.log('connected ', connected);
+      if (connected) return;
 
       const web3modal = new Web3Modal({
         network: "localhost",
@@ -23,15 +25,28 @@ export const useWeb3React = () => {
       const connection = await web3modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
       const signer = await provider.getSigner();
-      // console.log('network: ', await signer.getChainId())
+      const balance = await signer.getBalance();
+      
+      // console.log(
+      //   "network: ",
+      //   await signer.getChainId(),
+      //   await signer.getAddress(),
+      //   ethers.utils.formatUnits(balance.toString(), 'ether')
+      // );
       setSigner(signer);
       setProvider(provider);
       setConnected(true);
     } catch (e) {
-      console.log('web3 connection error: ', e);
-      setError(true)
+      console.log("web3 connection error: ", e);
+      setError(true);
     }
   }
 
-  return { provider, signer, connected, connect, error };
+  return (
+    <web3context.Provider
+      value={{ signer, error, connect, connected, provider }}
+    >
+      {children}
+    </web3context.Provider>
+  );
 };
