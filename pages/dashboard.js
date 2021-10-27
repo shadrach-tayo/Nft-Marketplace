@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 import { ethers } from "ethers";
 import { useEffect, useState, useContext } from "react";
@@ -14,16 +15,35 @@ import { web3context } from "../context/web3ProviderContext";
 export default function Home() {
   const [nfts, setNfts] = useState([]);
   const [loaded, setLoaded] = useState("not-loaded");
-  const { signer, connected } = useContext(web3context);
+  const { signer, connected, address } = useContext(web3context);
 
   useEffect(() => {
-    if (loaded == "loaded") return;
+    if(!connected && !address) return;
+    console.log('reload nfts');
     loadNFTs();
-  }, [connected]);
+  }, [connected, address]);
+
+  useEffect(() => {
+    if(!signer) return;
+    
+    const marketContract = new ethers.Contract(
+      nftmarketaddress,
+      Market.abi,
+      signer
+    );
+    marketContract.on("MarketItemLocked", async (evt) => {
+      console.log("event emitted ", evt);
+    });
+
+
+    () => {
+      marketContract.removeAllListeners("MarketItemLocked");
+    };
+  }, [signer, signer?.address]);
 
   async function loadNFTs() {
     // write code to query own nfts here
-    if(!connected) return;
+    if (!connected) return;
 
     const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
     const marketContract = new ethers.Contract(
@@ -43,17 +63,40 @@ export default function Home() {
           price,
           name: meta.data.name,
           tokenId: i.tokenId.toNumber(),
+          itemId: i.itemId.toNumber(),
           image: meta.data.image,
           owner: i.owner,
           seller: i.seller,
           description: meta.data.description,
+          locked: i.locked,
         };
         return item;
       })
     );
 
+    console.log("items", items);
     setNfts(items);
     setLoaded("loaded");
+  }
+
+  async function toggleLock({ lock, itemId }) {
+    if (!connected) return;
+    console.log("lock ", lock, itemId);
+    // const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
+    const marketContract = new ethers.Contract(
+      nftmarketaddress,
+      Market.abi,
+      signer
+    );
+    let transaction;
+    if (lock) {
+      transaction = await marketContract.lockNft(itemId);
+    } else {
+      transaction = await marketContract.unlockNft(itemId);
+    }
+    await transaction.wait();
+    console.log("result ", transaction);
+    await loadNFTs();
   }
 
   if (loaded === "loaded" && !nfts.length)
@@ -71,9 +114,9 @@ export default function Home() {
   return (
     <div className="flex justify-center">
       <div style={{ width: 900 }}>
-        <div className="grid grid-cols-2 gap-4 pt-8">
+        <div className="grid grid-cols-3 gap-4 pt-20">
           {nfts.map((nft, i) => (
-            <MarketItem nft={nft} key={i} />
+            <MarketItem nft={nft} key={i} onToggleLock={toggleLock} />
           ))}
         </div>
       </div>

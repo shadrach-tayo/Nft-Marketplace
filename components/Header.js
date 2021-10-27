@@ -6,7 +6,6 @@ import { MenuIcon, XIcon } from "@heroicons/react/outline";
 import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import { useRouter } from "next/router";
-import { useWeb3React } from "../hooks/useWeb3React";
 import { web3context } from "../context/web3ProviderContext";
 
 // import { ChevronDownIcon } from "@heroicons/react/solid";
@@ -14,19 +13,14 @@ import { web3context } from "../context/web3ProviderContext";
 export default function Header() {
   const router = useRouter();
   const [activeRoute, setActiveRoute] = useState("");
-  const { connected, signer, error, connect } = useContext(web3context);
+  const { connected, signer, error, connect, disconnect } =
+    useContext(web3context);
 
-  console.log('web3 ', connected, signer)
+  // console.log("web3 ", connected, signer);
   useEffect(() => {
     setActiveRoute(router.pathname);
     // getProps()
   }, [router.pathname]);
-
-  // async function getProps() {
-
-  //   console.log('address ', (await signer.getAddress()));
-  // }
-
 
   return (
     <Popover className="relative bg-white">
@@ -74,16 +68,16 @@ export default function Header() {
               MyNfts
             </Link>
           </Popover.Group>
-          
+
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
             {/* <span>{signer.getAddress()}</span> */}
             <a
               href="#"
               className={styles.connectButton}
-              onClick={() => !connected && connect()}
+              onClick={() => (connected ? disconnect() : connect())}
               disabled={connected}
             >
-              {connected ? "connected" : "Connect"}
+              {connected ? "disconnect" : "Connect"}
             </a>
           </div>
         </div>

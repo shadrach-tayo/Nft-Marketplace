@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import Web3Modal from "web3modal";
 
-export const useWeb3React = () => {
+const useWeb3React = () => {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -27,6 +27,14 @@ export const useWeb3React = () => {
       setSigner(signer);
       setProvider(provider);
       setConnected(true);
+
+      provider.on("accountsChanged", async () => {
+        console.log(`account changed!`);
+        setProvider(new ethers.providers.Web3Provider(provider));
+        const signer = await provider.getSigner();
+        setSigner(signer);
+      });
+
     } catch (e) {
       console.log('web3 connection error: ', e);
       setError(true)

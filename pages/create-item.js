@@ -23,47 +23,54 @@ export default function Home() {
     description: "",
   });
   const [loading, setLoading] = useState(false);
+  // const [processing, setProcessing] = useState(false);
   const router = useRouter();
   const { signer, connected } = useContext(web3context);
 
   async function createSale(url) {
-    if (!connected) return;
+    if (!connected || loading) return;
     console.log("url ", url);
 
     // ** write code to create sale here
     console.log("create sale ", connected);
     setLoading(true);
-    const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
 
-    let transaction = await tokenContract.createToken(url);
-    let tx = await transaction.wait();
-    let event = tx.events[0];
-    let value = event.args[2];
-    let price = web3.utils.toWei(formInput.price, "ether");
-    let tokenId = value.toNumber();
+    try {
+      const tokenContract = new ethers.Contract(nftaddress, NFT.abi, signer);
 
-    const marketContract = new ethers.Contract(
-      nftmarketaddress,
-      Market.abi,
-      signer
-    );
+      let transaction = await tokenContract.createToken(url);
+      let tx = await transaction.wait();
+      let event = tx.events[0];
+      let value = event.args[2];
+      let price = web3.utils.toWei(formInput.price, "ether");
+      let tokenId = value.toNumber();
 
-    const listingPrice = web3.utils.toWei("0.01", "ether");
-    transaction = await marketContract.createMarketItem(
-      tokenContract.address,
-      tokenId,
-      price,
-      { value: listingPrice }
-    );
-    await transaction.wait();
-    setLoading(false);
-    router.push("/");
+      const marketContract = new ethers.Contract(
+        nftmarketaddress,
+        Market.abi,
+        signer
+      );
+
+      const listingPrice = web3.utils.toWei("0.01", "ether");
+      transaction = await marketContract.createMarketItem(
+        tokenContract.address,
+        tokenId,
+        price,
+        { value: listingPrice }
+      );
+      await transaction.wait();
+      setLoading(false);
+      router.push("/");
+    } catch (e) {
+      setLoading(false)
+      // ** display error toast
+    }
   }
 
   async function onChange(e) {
     const file = e.target.files[0];
     try {
-      setLoading(true)
+      setLoading(true);
       const added = await client.add(file, {
         progress: (prog) => console.log(`received: ${prog}`),
       });

@@ -189,8 +189,9 @@ contract NFTMarket is ReentrancyGuard {
             idToMarketItem[marketItemId].owner == address(0),
             "Item cannot be locked"
         );
+        
+        idToMarketItem[marketItemId].locked = true;
         MarketItem storage item = idToMarketItem[marketItemId];
-        item.locked = true;
         emit MarketItemLocked(
             item.itemId,
             item.tokenId,
@@ -198,6 +199,7 @@ contract NFTMarket is ReentrancyGuard {
             item.seller,
             item.locked
         );
+
         return true;
     }
 
@@ -210,8 +212,8 @@ contract NFTMarket is ReentrancyGuard {
             idToMarketItem[marketItemId].owner == address(0),
             "Item cannot be unlocked"
         );
-        MarketItem storage item = idToMarketItem[marketItemId];
-        item.locked = false;
+       idToMarketItem[marketItemId].locked = false;
+       MarketItem storage item = idToMarketItem[marketItemId];
         emit MarketItemLocked(
             item.itemId,
             item.tokenId,
@@ -219,6 +221,7 @@ contract NFTMarket is ReentrancyGuard {
             item.seller,
             item.locked
         );
+
         return true;
     }
 }

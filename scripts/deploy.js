@@ -1,14 +1,17 @@
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
+require("dotenv").config();
 const hre = require("hardhat");
+
+const PUBLIC_KEY = process.env.PUBLIC_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 async function main() {
   // write the deploy script here
   const NFTMarket = await hre.ethers.getContractFactory("NFTMarket");
-  const nftMarket = await NFTMarket.deploy(
-    "0x114EA4c82a0B5d54Ce5697272a2De2e4a14D654C"
-  );
+  const nftMarket = await NFTMarket.deploy(PUBLIC_KEY);
   await nftMarket.deployed();
+  
   console.log("nftMarket deployed to : ", nftMarket.address);
 
   const NFT = await hre.ethers.getContractFactory("NFT");
